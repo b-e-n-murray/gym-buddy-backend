@@ -20,7 +20,8 @@ app.get("/:targetMuscles", async (req, res) => {
     const separatedStrings = targetMuscles.split(",");
     console.log("retrieving exercises targeting: ", separatedStrings);
     const relevantExercises = await client.query(
-      "SELECT * FROM exercise_data WHERE targets @> $1::VARCHAR[] OR targets && $1::VARCHAR[];",
+      "SELECT * FROM exercise_data WHERE targets @> $1::VARCHAR[] OR targets && $1::VARCHAR[] LIMIT 5;",
+      //select all rows where the targets column contains at least one of the elements in the given array.
       [separatedStrings]
     );
     res.status(200).json(relevantExercises.rows);
