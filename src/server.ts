@@ -14,7 +14,7 @@ client.connect();
 
 
 // GET /items/:id
-app.get("/exercises/:targetMuscles/:difficulty", async (req, res) => {
+app.get("/exercises/:targetMuscles/:difficulty/:goal/:equips", async (req, res) => {
   try {
     function determineLimit(targetArray: string, difficulty: string): number | undefined {
       if (difficulty === 'Easy') {
@@ -30,19 +30,32 @@ app.get("/exercises/:targetMuscles/:difficulty", async (req, res) => {
     }
     const targetMuscles = req.params.targetMuscles;
     const difficulty = req.params.difficulty
+    const goal = req.params.goal
+    const equips = req.params.equips.split(",")
     const limit = determineLimit(targetMuscles, difficulty)
     const separatedStrings = targetMuscles.split(",");
-    console.log("retrieving exercises targeting: ", separatedStrings);
-    const relevantExercises = await client.query(
-      `SELECT * FROM exercise_data 
-      WHERE targets @> $1::VARCHAR[] 
-      OR targets && $1::VARCHAR[] 
-      LIMIT $2;`,
-      //select all rows where the targets column contains at least one of the elements in the given array.
-      [separatedStrings, limit]
+    console.log(separatedStrings, difficulty, goal, equips, limit);
+    let relevantExercises
+    if (goal === 'Varied') {
+      relevantExercises = await client.query(
+      `SELECT * FROM exercise_data
+      WHERE (targets @> $1::VARCHAR[] OR targets && $1::VARCHAR[])
+      AND requirements = ANY($2::VARCHAR[])
+      LIMIT $3;`,
+      [separatedStrings, equips, limit]
     );
-    res.status(200).json(relevantExercises.rows);
+  } else {
+      relevantExercises = await client.query(
+      `SELECT * FROM exercise_data
+      WHERE (targets @> $1::VARCHAR[] OR targets && $1::VARCHAR[])
+      AND (NOT specialty != $2 OR specialty = $2)
+      AND requirements = ANY($3::VARCHAR[])
+      LIMIT $4;`,
+      [separatedStrings, goal, equips, limit]
+    );
   }
+    res.status(200).json(relevantExercises.rows);
+}
   catch (error) {
     console.error(error);
     res.status(404).json({ message: "internal error" });
