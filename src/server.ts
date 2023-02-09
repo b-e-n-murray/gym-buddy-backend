@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { Client } from "pg";
+import { singleExerciseQuery } from "./queries/get-exercises";
+import { twoExerciseQuery } from "./queries/get-exercises";
+import { threeExerciseQuery } from "./queries/get-exercises";
 
 const app = express();
 app.use(express.json());
@@ -12,55 +15,43 @@ const PORT_NUMBER = process.env.PORT ?? 4000;
 const client = new Client(process.env.DATABASE_URL);
 client.connect();
 
-
 // GET /items/:id
-app.get("/exercises/:targetMuscles/:difficulty/:goal/:equips", async (req, res) => {
-  try {
-    function determineLimit(targetArray: string, difficulty: string): number | undefined {
-      if (difficulty === 'Easy') {
-        return targetArray.length === 1 ? 2 : 3
+app.get(
+  "/exercises/:targetMuscles/:difficulty/:goal/:equips",
+  async (req, res) => {
+    try {
+      const targetMuscles = req.params.targetMuscles.split(",");
+      const difficulty = req.params.difficulty;
+      const goal = req.params.goal;
+      const equips = req.params.equips.split(",");
+      console.log(targetMuscles, difficulty, goal, equips);
+      if (targetMuscles.length === 1) {
+        const relevantExercises = await client.query(singleExerciseQuery, [
+          targetMuscles[0]
+        ]);
+        res.status(200).json(relevantExercises.rows);
       }
-      if (difficulty === 'Intermediate') {
-        return targetArray.length === 1 ? 2 : 4
+      if (targetMuscles.length === 2) {
+        const relevantExercises = await client.query(twoExerciseQuery, [
+          targetMuscles[0],
+          targetMuscles[1]
+        ]);
+        res.status(200).json(relevantExercises.rows);
       }
-      if (difficulty === 'Hard') {
-        return targetArray.length === 1 ? 3 : 5
+      if (targetMuscles.length === 3) {
+        const relevantExercises = await client.query(threeExerciseQuery, [
+          targetMuscles[0],
+          targetMuscles[1],
+          targetMuscles[2]
+        ]);
+        res.status(200).json(relevantExercises.rows);
       }
-      else return undefined
+    } catch (error) {
+      console.error(error);
+      res.status(404).json({ message: "internal error" });
     }
-    const targetMuscles = req.params.targetMuscles;
-    const difficulty = req.params.difficulty
-    const goal = req.params.goal
-    const equips = req.params.equips.split(",")
-    const limit = determineLimit(targetMuscles, difficulty)
-    const separatedStrings = targetMuscles.split(",");
-    console.log(separatedStrings, difficulty, goal, equips, limit);
-    let relevantExercises
-    if (goal === 'Varied') {
-      relevantExercises = await client.query(
-      `SELECT * FROM exercise_data
-      WHERE (targets @> $1::VARCHAR[] OR targets && $1::VARCHAR[])
-      AND requirements = ANY($2::VARCHAR[])
-      LIMIT $3;`,
-      [separatedStrings, equips, limit]
-    );
-  } else {
-      relevantExercises = await client.query(
-      `SELECT * FROM exercise_data
-      WHERE (targets @> $1::VARCHAR[] OR targets && $1::VARCHAR[])
-      AND (NOT specialty != $2 OR specialty = $2)
-      AND requirements = ANY($3::VARCHAR[])
-      LIMIT $4;`,
-      [separatedStrings, goal, equips, limit]
-    );
   }
-    res.status(200).json(relevantExercises.rows);
-}
-  catch (error) {
-    console.error(error);
-    res.status(404).json({ message: "internal error" });
-  }
-});
+);
 
 app.listen(PORT_NUMBER, () => {
   console.log(`Server is listening on port ${PORT_NUMBER}!`);
