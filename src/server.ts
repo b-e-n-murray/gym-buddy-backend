@@ -16,42 +16,36 @@ const client = new Client(process.env.DATABASE_URL);
 client.connect();
 
 // GET /items/:id
-app.get(
-  "/exercises/:targetMuscles/:difficulty/:goal/:equips",
-  async (req, res) => {
-    try {
-      const targetMuscles = req.params.targetMuscles.split(",");
-      const difficulty = req.params.difficulty;
-      const goal = req.params.goal;
-      const equips = req.params.equips.split(",");
-      console.log(targetMuscles, difficulty, goal, equips);
-      if (targetMuscles.length === 1) {
-        const relevantExercises = await client.query(singleExerciseQuery, [
-          targetMuscles[0]
-        ]);
-        res.status(200).json(relevantExercises.rows);
-      }
-      if (targetMuscles.length === 2) {
-        const relevantExercises = await client.query(twoExerciseQuery, [
-          targetMuscles[0],
-          targetMuscles[1]
-        ]);
-        res.status(200).json(relevantExercises.rows);
-      }
-      if (targetMuscles.length === 3) {
-        const relevantExercises = await client.query(threeExerciseQuery, [
-          targetMuscles[0],
-          targetMuscles[1],
-          targetMuscles[2]
-        ]);
-        res.status(200).json(relevantExercises.rows);
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(404).json({ message: "internal error" });
+app.get("/exercises/:targetMuscles", async (req, res) => {
+  try {
+    const targetMuscles = req.params.targetMuscles.split(",");
+    console.log(targetMuscles);
+    if (targetMuscles.length === 1) {
+      const relevantExercises = await client.query(singleExerciseQuery, [
+        targetMuscles[0],
+      ]);
+      res.status(200).json(relevantExercises.rows);
     }
+    if (targetMuscles.length === 2) {
+      const relevantExercises = await client.query(twoExerciseQuery, [
+        targetMuscles[0],
+        targetMuscles[1],
+      ]);
+      res.status(200).json(relevantExercises.rows);
+    }
+    if (targetMuscles.length === 3) {
+      const relevantExercises = await client.query(threeExerciseQuery, [
+        targetMuscles[0],
+        targetMuscles[1],
+        targetMuscles[2],
+      ]);
+      res.status(200).json(relevantExercises.rows);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(404).json({ message: "internal error" });
   }
-);
+});
 
 app.listen(PORT_NUMBER, () => {
   console.log(`Server is listening on port ${PORT_NUMBER}!`);
