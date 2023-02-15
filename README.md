@@ -1,24 +1,13 @@
-# Academy Express Starter
+# Gym Buddy Application
 
-This is set up as a quick starter for a no-persistence RESTful Express API (using just an array for in-server memory).
-
-## Getting started
-
-### Shaping the 'database'
-
-`db.ts` is set up for a generic `DbItem` - you may want to reshape and rename that interface.
-
-### Install dependencies
-```
-yarn
-```
-
-### Run server
-```
-yarn start
-```
-
-Or, for dev mode (restarts server automatically when relevant files change):
-```
-yarn start:dev
-```
+<h3>Backend Repo</h3>
+<hr/>
+  <p>Find my front-end repo
+    <a href="https://github.com/b-e-n-murray/react-gym-buddy-app" alt="">here</a>
+  </p>
+  <div>
+  The backend for this project uses Express.JS, and PostgreSQL. The data is self-made, based on my favourite gym exercises. I have attributed my own difficulty rating to each exercise, along with the equipment that is required and the muscles it targets.
+  <br />
+  <br />
+  If you wish to recreate this project, please refer to the createdb.sql file within the src folder of this repo in order to use my exact dataset.
+  </div>
