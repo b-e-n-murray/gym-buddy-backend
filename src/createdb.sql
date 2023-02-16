@@ -1,92 +1,140 @@
 create table exercise_data (
   id SERIAL PRIMARY KEY,
   exercise_name VARCHAR(250) NOT NULL,
-  targets VARCHAR(255) ARRAY[1],
   difficulty TEXT CHECK(difficulty = 'Easy' OR difficulty = 'Intermediate' OR difficulty = 'Hard'),
-  image_url VARCHAR(1000),
   requirements TEXT CHECK(requirements = 'None' OR requirements = 'Machine' OR requirements = 'Free-weights'),
   specialty TEXT CHECK(specialty = 'Muscle-building' OR specialty = 'Varied' OR specialty = 'Strength'))
   
 INSERT INTO exercise_data VALUES
 (DEFAULT,
  'Lat-Pulldown',
- ARRAY['Back'],
  'Intermediate',
- 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fkinxlearning.com%2Fpages%2Flat-pull-down&psig=AOvVaw2Vl8fz4OCQPLM2IpW_kkKP&ust=1671904727520000&source=images&cd=vfe&ved=0CA0QjRxqFwoTCIi478yokPwCFQAAAAAdAAAAABAG',
  'Machine',
- 'Muscle-building')
- --need to change link adress to image address--
- 
- INSERT INTO exercise_data VALUES
-(DEFAULT,
-'Barbell Bench Press',
-ARRAY['Chest', 'Triceps'],
-'Intermediate',
-'https://www.inspireusafoundation.org/wp-content/uploads/2022/06/barbell-bench-press-benefits-1024x576.jpg',
-'Free-weights',
-'Strength')
+ 'Muscle-building'),
 
- INSERT INTO exercise_data VALUES
+(DEFAULT,
+  'Barbell Bench Press',
+'Intermediate',
+'Free-weights',
+'Strength'),
+
 (DEFAULT,
 'Sit-up',
-ARRAY['Core'],
 'Easy',
-'https://cdn.shopify.com/s/files/1/1075/8446/files/exercise-18.jpg?0',
 'None',
 'Varied'),
 
 (DEFAULT,
 'Barbell Squat',
-ARRAY['Quads', 'Hamstrings', 'Glutes'],
 'Intermediate',
-'https://www.inspireusafoundation.org/wp-content/uploads/2022/06/the-barbell-squat.jpg',
 'Free-weights',
 'Varied'),
 
 (DEFAULT,
 'Skullcrushers',
-ARRAY['Triceps'],
 'Hard',
-'https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03511101-Dumbbell-Lying-Triceps-Extension_Upper-Arms_small.jpg',
 'Free-weights',
-'Muscle-building');
+'Muscle-building'),
 
-INSERT INTO exercise_data VALUES
 (DEFAULT,
 'EZ Bar Curl',
-ARRAY['Biceps'],
 'Easy',
-'https://image.shutterstock.com/image-illustration/ez-bar-curls-3d-illustration-260nw-419477218.jpg',
 'Free-weights',
 'Muscle-building'),
 
 (DEFAULT,
 'Nordic Hamstring Curls',
-ARRAY['Hamstrings'],
 'Hard',
-'https://www.leeboyce.com/wp-content/uploads/2021/08/spotlighthinge.jpg',
 'None',
 'Varied'),
 
 (DEFAULT,
 'Calf Raises',
- ARRAY['Calves'],
 'Easy',
-'https://cdn.shopify.com/s/files/1/1075/8446/files/exercise-1.jpg?0',
 'None',
 'Muscle-building');
 
+(DEFAULT,
+'Dumbbell Fly',
+'Intermediate',
+'Free-weights',
+'Muscle-building'),
 
-SELECT *
-FROM exercise_data
-WHERE 'Triceps' = ANY(targets);
+(DEFAULT,
+'Deadlift',
+'Hard',
+'Free-weights',
+'Strength'),
 
-SELECT *
-FROM exercise_data
-WHERE targets @> ARRAY['Chest', 'Triceps']::VARCHAR[];
+(DEFAULT,
+'Cable Rope Tricep Extension',
+'Intermediate',
+'Machine',
+'Muscle-building'),
 
-SELECT * FROM exercise_data WHERE [Chest, Triceps] = ANY(targets) -- 
+(DEFAULT,
+'Russian Twist',
+'Intermediate',
+'None',
+'Muscle-building'),
 
-SELECT * FROM exercise_data
-WHERE targets @> ARRAY['Chest', 'Triceps']::VARCHAR[]
-OR targets && ARRAY['Chest', 'Triceps']::VARCHAR[];
+(DEFAULT,
+'Plank',
+'Easy',
+'None',
+'Muscle-building'),
+
+(DEFAULT,
+'Lunge',
+'Easy',
+'None',
+'Varied'),
+
+(DEFAULT,
+'Pull-up',
+'Intermediate',
+'None',
+'Strength');
+
+CREATE TABLE muscles (
+  id SERIAL PRIMARY KEY,
+  muscle_name VARCHAR(50));
+  
+INSERT INTO muscles (muscle_name)
+VALUES(
+  'Chest'),
+  ('Back'),
+  ('Biceps'),
+  ('Triceps'),
+  ('Shoulders'),
+  ('Glutes'),
+  ('Core'),
+  ('Hamstrings'),
+  ('Quads'),
+  ('Calves');
+  
+  CREATE TABLE exercise_muscles (
+    id SERIAL PRIMARY KEY,
+    exercise_id INT,
+    muscle_id INT,
+    FOREIGN KEY (exercise_id) REFERENCES exercise_data(id),
+    FOREIGN KEY (muscle_id) REFERENCES muscles(id));
+
+    CREATE TABLE saved_workouts (
+  id SERIAL PRIMARY KEY,
+  workout_name VARCHAR(255) NOT NULL,
+  date TIMESTAMP);
+  
+CREATE TABLE workout_exercises (
+  id SERIAL PRIMARY KEY,
+  workout_id INT,
+  exercise_id INT,
+  FOREIGN KEY (workout_id) REFERENCES saved_workouts(id),
+  FOREIGN KEY (exercise_id) REFERENCES exercise_data(id));
+  
+  INSERT INTO exercise_muscles (exercise_id, muscle_id)
+  VALUES
+  (1, 2), (2, 1), (2, 4), (3, 7), (4, 6), (4, 8), (4, 9), (5, 4), (6, 3),
+  (7, 8), (8, 10), (9, 1), (10, 2), (10, 8), (10, 7), (11, 4), (12, 7),
+  (13, 7), (14, 6), (14, 9), (15, 2), (16, 7), (17, 10), (18, 1), (18, 4),
+  (19, 2), (20, 6), (21, 2), (22, 1), (23, 5), (24, 6), (24, 9), (25, 4);
